@@ -8,24 +8,32 @@ WINDOW_TITLE = "MAP"
 MAP_FILE = "map.png"
 lat = '55.757718'
 lon = '37.677751'
+z = 0
 
 
 class GameView(arcade.Window):
     def setup(self):
-        self.get_image()
+        self.get_image(z)
+        self.z = z
 
-
-    def request(self):
+    def request(self, z):
         server_address = 'https://static-maps.yandex.ru/v1?'
         api_key = 'f3a0fe3a-b07e-4840-a1da-06f18b2ddf13'
         params = {
             'll': ','.join([lon, lat]),
-            'z': 2,
+            'z': z,
             'apikey': api_key
         }
         response = requests.get(server_address, params=params)
         return response
 
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.PAGEUP and self.z < 21:
+            self.z += 1
+            self.get_image(self.z)
+        elif key == arcade.key.PAGEDOWN and self.z > 0:
+            self.z -= 1
+            self.get_image(self.z)
 
     def on_draw(self):
         self.clear()
@@ -40,8 +48,8 @@ class GameView(arcade.Window):
             ),
         )
 
-    def get_image(self):
-        response = self.request()
+    def get_image(self, z):
+        response = self.request(z)
         with open(MAP_FILE, "wb") as file:
             file.write(response.content)
 
